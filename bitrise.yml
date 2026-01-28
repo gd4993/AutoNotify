@@ -1,0 +1,35 @@
+format_version: '11'
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
+workflows:
+  build-debug:
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@8: {}
+    - cache-pull@2: {}
+    - install-missing-android-tools@3:
+        inputs:
+        - gradlew_path: ./gradlew
+    - android-build@1:
+        inputs:
+        - variant: debug
+        - module: app
+    - sign-apk@1:
+        run_if: '{{getenv "BITRISEIO_ANDROID_KEYSTORE_URL" | ne ""}}'
+        inputs:
+        - android_app: $BITRISE_APK_PATH
+    - cache-push@2: {}
+    - deploy-to-bitrise-io@2: {}
+
+app:
+  envs:
+  - opts:
+      is_expand: false
+    PROJECT_LOCATION: .
+  - opts:
+      is_expand: false
+    MODULE: app
+  - opts:
+      is_expand: false
+    VARIANT: debug

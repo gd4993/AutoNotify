@@ -1,0 +1,28 @@
+environment:
+  ANDROID_HOME: C:\android-sdk
+
+install:
+  - appveyor DownloadFile https://dl.google.com/android/repository/commandlinetools-win-9477386_latest.zip
+  - 7z x commandlinetools-win-9477386_latest.zip -oC:\android-sdk > nul
+  - mkdir C:\android-sdk\cmdline-tools\latest
+  - move C:\android-sdk\cmdline-tools\* C:\android-sdk\cmdline-tools\latest\ > nul 2>&1
+  - set PATH=C:\android-sdk\cmdline-tools\latest\bin;%PATH%
+  - yes | sdkmanager --licenses
+  - sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+
+build_script:
+  - gradlew.bat assembleDebug
+
+artifacts:
+  - path: app\build\outputs\apk\debug\app-debug.apk
+    name: AutoNotify-Debug
+
+deploy:
+  - provider: GitHub
+    auth_token:
+      secure: YOUR_GITHUB_TOKEN
+    artifact: AutoNotify-Debug
+    draft: false
+    prerelease: false
+    on:
+      branch: main
